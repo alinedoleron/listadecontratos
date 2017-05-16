@@ -70,13 +70,27 @@ function preencheTabela(contents) {
     $('#table-content').append("<tr id=\"item_"+ i +"\"></tr>");
     for(var j=0; j<header.length ; j++) {
       var content = Object.values(contents[i]);
-      $('#item_'+ i).append("<td class=\"col_"+j+"\">"+content[j]+"</td>");
+      $('#item_'+ i).append("<td data-toggle=\"modal\" data-target=\"#myModal\" class=\"col_"+j+"\">"+content[j]+"</td>");
     }
   }
   atualizarColunasEscondidas();
   $('#no-results').addClass("hidden");
   $('#table-header').removeClass("hidden");
-
+  $("tbody#table-content").children().click(function(e) {
+    $("#contract-data").empty();
+    console.log(e.currentTarget.id);
+    if(e.currentTarget.id!=null) {
+      for(var i=0; i<Object.values(contents[(e.currentTarget.id).slice(5)]).length; i++) {
+        // console.log(Object.values(contents[(e.currentTarget.id).slice(5)])[i]);
+        var elementos = Object.values(contents[(e.currentTarget.id).slice(5)]);
+        $("#contract-data").append("<label for=\"input"+header[i].toLowerCase()+"\">"+header[i]+"</label>");
+        // <label for="exampleInputEmail1">Email address</label>
+        $("#contract-data").append("<input type=\""+elementos[i].toLowerCase()+
+        "\" class=\"form-control\" id=\""+header[i].toLowerCase().replace(/\s/g, '')+
+        "\" value=\""+elementos[i] + "\"placeholder=\""+elementos[i]+"\">");
+      }
+    }
+  });
 
 }
 
@@ -90,9 +104,7 @@ function carregaCabecalho() {
   }
 }
 
-$("#refresh").click(function() {
-  preencheTabela(contents);
-});
+
 
 function buscarLinhas(event) {
   var linhas = [];
@@ -108,10 +120,8 @@ function buscarLinhas(event) {
         resultadoBusca.push(contents[i]);
         break;
       }
-
     }
   }
-
   console.log(linhas.length);
 
   busca = linhas;
@@ -126,24 +136,28 @@ function buscarLinhas(event) {
   }
 }
 
+function salvarDados(event) {
+  console.log(event);
+  console.log(event.currentTarget.firstElementChild.id);
+  console.log($("#"+event.currentTarget.firstElementChild.id).children());
+  event.preventDefault();
+  //TODO procurar posição no array pelo Código
+  //TODO Dar push nos dados
+}
+
+
 
 //inicializa a tabela
 $(document).ready(function(){
   $("#search-form").on('submit', buscarLinhas);
-
-
+  $("#modal-form").on('submit', salvarDados);
   $.getJSON('./js/dados.json', function(data) {
     dados = data;
     header = Object.keys(dados.contracts[0]);
     contents = Object.values(dados.contracts);
-
     carregarCheckBoxes();
-
     carregaCabecalho();
-
     preencheTabela(contents);
-
-    // $("#refresh").on('click', preencheTabela);
     $("#refresh").click(function() {
       $("#search-text").val("");
       resultadoBusca = [];
