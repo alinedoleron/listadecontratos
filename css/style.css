@@ -1,0 +1,46 @@
+body {
+    box-sizing: border-box;
+}
+
+.searchbar{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.form-search{
+  margin-top: 0;
+  padding: 0;
+  margin-left: 10px;
+}
+
+
+
+.refresh {
+  width: 55px;
+  height: 34px;
+  margin-left: 10px;
+}
+
+.item-header {
+  width: 100px;
+}
+
+.glyphicon {
+  margin-left: 3px;
+}
+
+td {
+  width: 100px !important;
+}
+
+.checkboxes {
+  padding-left: 5px;
+}
+
+.hidden {
+  display: none;
+}
+
+.no-results {
+  text-align: center;
+}
