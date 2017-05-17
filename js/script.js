@@ -6,7 +6,7 @@ var resultadoBusca= []; // guarda os ids ultima busca
 
 
 
-//Ordena as colunas TODO: fazer a ordenação funcionar para o campo buscado
+//Ordena as colunas. TODO: fazer a ordenação correta para datas
 function ordenar(id) {
   chave = $('#'+id).text();
   dadosOrdenados = [];
@@ -14,10 +14,11 @@ function ordenar(id) {
   if(resultadoBusca.length > 0) {
     dadosNaoOrdenados = resultadoBusca;
   } else {
-    dadosNaoOrdenados = dados.contracts;
+    dadosNaoOrdenados = contents;
   }
 
   var dadosOrdenados = Object.values(dadosNaoOrdenados).sort(function(a, b) {
+    console.log(a[chave] + "---" + b[chave]);
     if (a[chave] < b[chave]) {
       return -1;
     }
@@ -76,20 +77,32 @@ function preencheTabela(contents) {
   atualizarColunasEscondidas();
   $('#no-results').addClass("hidden");
   $('#table-header').removeClass("hidden");
+
+  //carrega o formulário do modal
   $("tbody#table-content").children().click(function(e) {
     $("#contract-data").empty();
-    console.log(e.currentTarget.id);
+    //console.log("current ID "+e.currentTarget.id);
+
     if(e.currentTarget.id!=null) {
+      //console.log("Antes Preencher -> ");
+      //console.log(contents);
+
       for(var i=0; i<Object.values(contents[(e.currentTarget.id).slice(5)]).length; i++) {
+        //console.log(header);
+        //console.log(header[i]);
         // console.log(Object.values(contents[(e.currentTarget.id).slice(5)])[i]);
         var elementos = Object.values(contents[(e.currentTarget.id).slice(5)]);
         $("#contract-data").append("<label for=\"input"+header[i].toLowerCase()+"\">"+header[i]+"</label>");
-        // <label for="exampleInputEmail1">Email address</label>
-        $("#contract-data").append("<input type=\""+elementos[i].toLowerCase()+
-        "\" class=\"form-control\" id=\""+header[i].toLowerCase().replace(/\s/g, '')+
+        $("#contract-data").append("<input type=\"text\" class=\"form-control\" id=\""+
+        header[i].toLowerCase().replace(/\s/g, '')+
         "\" value=\""+elementos[i] + "\"placeholder=\""+elementos[i]+"\">");
+        if(header[i] === "Código") {
+          $("#código").prop( "disabled", true );
+        }
       }
     }
+    //console.log("Depois Preencher -> ");
+    //console.log(contents);
   });
 
 }
@@ -105,7 +118,7 @@ function carregaCabecalho() {
 }
 
 
-
+//buscar conteúdo
 function buscarLinhas(event) {
   var linhas = [];
   resultadoBusca = [];
@@ -115,14 +128,14 @@ function buscarLinhas(event) {
     //if((Object.values(contents[i])).indexOf($("#search-text").val()) != -1) { // melhorar com javascript regular expression match
     for (var j = 0; j < Object.values(contents[i]).length; j++) {
       if(Object.values(contents[i])[j].toLowerCase().match($("#search-text").val().toLowerCase()) != null) {
-        console.log("linha "+ contents[i] +" - "+ Object.values(contents[i])[j].toLowerCase().match($("#search-text").val().toLowerCase()));
+        //console.log("linha "+ contents[i] +" - "+ Object.values(contents[i])[j].toLowerCase().match($("#search-text").val().toLowerCase()));
         linhas.push(contents[i]);
         resultadoBusca.push(contents[i]);
         break;
       }
     }
   }
-  console.log(linhas.length);
+  //console.log(linhas.length);
 
   busca = linhas;
   preencheTabela(linhas);
@@ -136,21 +149,52 @@ function buscarLinhas(event) {
   }
 }
 
+//salvar os dados editados
 function salvarDados(event) {
-  console.log(event);
-  console.log(event.currentTarget.firstElementChild.id);
-  console.log($("#"+event.currentTarget.firstElementChild.id).children());
   event.preventDefault();
+  contratoSelecionado = event.currentTarget.firstElementChild.id;
+  dadosForm = [];
+  var linha;
+  //console.log($("#"+contratoSelecionado).find("#código").siblings('input'));
   //TODO procurar posição no array pelo Código
-  //TODO Dar push nos dados
+  //console.log($("#"+event.currentTarget.firstElementChild.id).find('input')[0].value);
+  console.log("Início salvar -> ");
+  console.log(contents);
+  console.log(header);
+
+  for (var i = 0; i < $("#"+event.currentTarget.firstElementChild.id).find('input').length; i++) {
+    //console.log($("#"+event.currentTarget.firstElementChild.id).find('input')[i].value);
+    dadosForm.push(($("#"+event.currentTarget.firstElementChild.id).find('input')[i].value));
+  }
+  for (var i = 0; i < contents.length; i++) {
+    if(Object.values(contents[i])[0].match($("#"+contratoSelecionado).find("#código").val()) != null) {
+      //console.log("Array do form " + i);
+      linha = i;
+      break;
+    }
+  }
+  for (var i=0; i<header.length; i++) {
+
+    contents[linha][header[i]]=dadosForm[i];
+  }
+  //TODO adicionar mensagem de que os dados foram salvos
+  console.log(contents);
+  dadosForm = [];
 }
 
 
 
+function atualizar() {
+  $("#search-text").val("");
+  resultadoBusca = [];
+  dadosOrdenados = [];
+  dadosNaoOrdenados = [];
+  preencheTabela(contents);
+}
+
 //inicializa a tabela
 $(document).ready(function(){
   $("#search-form").on('submit', buscarLinhas);
-  $("#modal-form").on('submit', salvarDados);
   $.getJSON('./js/dados.json', function(data) {
     dados = data;
     header = Object.keys(dados.contracts[0]);
@@ -158,13 +202,18 @@ $(document).ready(function(){
     carregarCheckBoxes();
     carregaCabecalho();
     preencheTabela(contents);
-    $("#refresh").click(function() {
-      $("#search-text").val("");
-      resultadoBusca = [];
-      dadosOrdenados = [];
-      dadosNaoOrdenados = [];
-      preencheTabela(contents);
-    });
+    $("#refresh").on('click', atualizar);
+    // $("#refresh").click(function() {
+    //   $("#search-text").val("");
+    //   resultadoBusca = [];
+    //   dadosOrdenados = [];
+    //   dadosNaoOrdenados = [];
+    //   preencheTabela(contents);
+    // });
+    $("#modal-form").on('submit', salvarDados);
+    $('#closeModal').click(function () {
+      atualizar();
+    })
 
 
 
