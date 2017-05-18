@@ -12,8 +12,7 @@ var lastCol;
 
 function descrescente(a, b) {
   var retorno = crescente(a, b);
-  //console.log(retorno);
-  return (-1*retorno);
+  return -1*retorno;
 
 }
 
@@ -88,8 +87,14 @@ function crescente(a, b) {
 //Carrega os checkboxes
 function carregarCheckBoxes() {
   for (var i=0; i<header.length ; i++) {
-    $('#dropdown').append("<li class=\"checkboxes \"><input class=\"ccol_"+ i +"\" type=\"checkbox\" onchange=\"addRemColunas(this.className)\">"+header[i]+"</li>");
-    $('.ccol_'+i).prop("checked", true);
+
+  	var el = $("<li>", {class: "checkboxes"});
+  	var inp = $("<input>", {class: "ccol_" + i, type: "checkbox", checked: true}).appendTo(el);
+  	inp.change(function (){
+  		addRemColunas(this.className);
+  	});
+  	el.append(header[i]);
+  	el.appendTo($("#dropdown"));
   }
 
 }
@@ -154,11 +159,11 @@ function preencheTabela(contents) {
           $("#input"+header[i].toLowerCase().replace(/\s/g, '')).prop("for", "date");
         }
 
-        if(elementos[i].match(/^\w{3}\/\d{4}$/) != null) {
-          $("#"+header[i].toLowerCase().replace(/\s/g, '')).prop("name", "date");
-          $("#"+header[i].toLowerCase().replace(/\s/g, '')).prop("placeholder", "M/YYY");
-          $("#input"+header[i].toLowerCase().replace(/\s/g, '')).prop("for", "date");
-        }
+		else if(elementos[i].match(/^\w{3}\/\d{4}$/) != null) {
+		          $("#"+header[i].toLowerCase().replace(/\s/g, '')).prop("name", "date_month_name");
+		          $("#"+header[i].toLowerCase().replace(/\s/g, '')).prop("placeholder", "M/YYY");
+		          $("#input"+header[i].toLowerCase().replace(/\s/g, '')).prop("for", "date");
+		}
 
         if(header[i] === "Código") {
           $("#código").prop( "disabled", true );
@@ -177,15 +182,15 @@ function preencheTabela(contents) {
     var container=$('.bootstrap-iso form').length>0 ? $('.bootstrap-iso form').parent() : "body";
     var option_standard={
       format: 'dd-mm-yyyy',
-      container: container,
       todayHighlight: true,
       autoclose: true,
+      language: 'pt-BR',
     };
     var option_monthName={
       format: 'M/yyyy',
-      container: container,
       todayHighlight: true,
       autoclose: true,
+      language: 'pt-BR',
     };
     date_input.datepicker(option_standard);
     date_input_month_name.datepicker(option_monthName);
@@ -284,7 +289,7 @@ $(document).ready(function(){
   $.getJSON('./js/dados.json', function(data) {
     dados = data;
     header = Object.keys(dados.contracts[0]);
-    contents = Object.values(dados.contracts);
+    contents = dados.contracts;
     carregarCheckBoxes();
     carregaCabecalho();
     preencheTabela(contents);
