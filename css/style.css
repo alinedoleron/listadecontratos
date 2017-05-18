@@ -22,7 +22,8 @@ body {
 }
 
 .item-header {
-  width: 100px;
+  width: 120px;
+  height: 100px;
 }
 
 .glyphicon {
@@ -47,4 +48,9 @@ td {
 
 .edit-data-button {
   margin-bottom: 10px;
+}
+
+.save-msg-success {
+  color: green;
+  text-align: left;
 }
